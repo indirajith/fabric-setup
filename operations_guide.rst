@@ -1309,4 +1309,4 @@ you query by running:
 
 This should return a value of ``90``.
 
-This concludes the Setup and Operations Guide for Fabric network including Fabric CA with RAFT and couchdb on multinodes.
+This concludes the Setup and Operations Guide for Fabric network including Fabric CA with RAFT and couchdb on multi hosts.
