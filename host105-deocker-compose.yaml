@@ -1,0 +1,164 @@
+version: '2'
+
+networks:
+   fabric-host5:
+
+services:
+   rca-org2:
+      container_name: rca-org2.inuit.local
+      image: hyperledger/fabric-ca
+      command: sh -c 'fabric-ca-server start -d -b rca-org2-admin:rca-org2-adminpw --port 7055'
+      environment:
+         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-org2-rca/crypto
+         - FABRIC_CA_SERVER_NAME=rca-org2.inuit.local
+         - FABRIC_CA_SERVER_TLS_ENABLED=true
+         - FABRIC_CA_SERVER_CSR_CN=rca-org2.inuit.local
+         - FABRIC_CA_SERVER_CSR_HOSTS=rca-org2.inuit.local,localhost,0.0.0.0
+         - FABRIC_CA_SERVER_DEBUG=true
+      volumes:
+         - /etc/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
+      networks:
+         - fabric-host5
+      ports:
+         - 7055:7055
+
+   peer1-org2:
+      container_name: peer1-org2.inuit.local
+      image: hyperledger/fabric-peer
+      environment:
+         - CORE_PEER_ID=peer1-org2.inuit.local
+         - CORE_PEER_ADDRESS=peer1-org2.inuit.local:7051
+         - CORE_PEER_LOCALMSPID=org2MSP
+         - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/peer1/msp
+         - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+         - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric-proj_fabric-host5
+         - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdbp1o2:5984
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=peer1-org2
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=p1o2cdbpw
+         - FABRIC_LOGGING_SPEC=debug
+         - CORE_PEER_TLS_ENABLED=true
+         - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/org2/peer1/tls-msp/signcerts/cert.pem
+         - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/org2/peer1/tls-msp/keystore/key.pem
+         - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/org2/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - CORE_PEER_GOSSIP_USELEADERELECTION=true
+         - CORE_PEER_GOSSIP_ORGLEADER=false
+         - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-org2.inuit.local:7051
+         - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org2/peer1
+      volumes:
+         - /var/run:/host/var/run
+         - /etc/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
+      extra_hosts:
+         - "ca-tls.inuit.local:192.168.176.101"
+         - "rca-org0.inuit.local:192.168.176.101"
+         - "rca-org1.inuit.local:192.168.176.101"
+         - "cli-org0.inuit.local:192.168.176.104"
+         - "ord2-org1.inuit.local:192.168.176.104"
+         - "cli-org1.inuit.local:192.168.176.103"
+         - "ord2-org2.inuit.local:192.168.176.103"
+         - "peer1-org1.inuit.local:192.168.176.103"
+         - "ord1-org1.inuit.local:192.168.176.103"
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+      depends_on:
+         - couchdbp1o2
+      networks:
+         - fabric-host5
+      ports:
+         - "10051:7051"
+         - "10053:7053"
+
+   couchdbp1o2:
+      container_name: couchdbp1o2
+      image: hyperledger/fabric-couchdb
+      environment:
+         - COUCHDB_USER=peer1-org2
+         - COUCHDB_PASSWORD=p1o2cdbpw
+      ports:
+         - "5984:5984"
+      networks:
+         - fabric-host5
+
+   ord1-org2:
+      container_name: ord1-org2.inuit.local
+      image: hyperledger/fabric-orderer:1.4.2
+      environment:
+         - ORDERER_HOME=/etc/hyperledger/orderer
+         - ORDERER_HOST=ord1-org2.inuit.local
+         - ORDERER_GENERAL_LISTENADDRESS=ord1-org2.inuit.local
+         - ORDERER_GENERAL_GENESISMETHOD=file
+         - ORDERER_GENERAL_GENESISFILE=../org2/ord1/genesis.block
+         - ORDERER_GENERAL_LOCALMSPID=org2MSP
+         - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/org2/ord1/msp
+         - ORDERER_GENERAL_TLS_ENABLED=true
+         - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/org2/ord1/tls-msp/signcerts/cert.pem
+         - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/org2/ord1/tls-msp/keystore/key.pem
+         - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/org2/ord1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/etc/hyperledger/org2/ord1/tls-msp/signcerts/cert.pem
+         - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/etc/hyperledger/org2/ord1/tls-msp/keystore/key.pem
+         - ORDERER_GENERAL_CLUSTER_ROOTCAS=/etc/hyperledger/org2/ord1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - ORDERER_GENERAL_LOGLEVEL=debug
+         - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+      command: orderer
+      volumes:
+         - /etc/hyperledger/org2/ord1:/etc/hyperledger/org2/ord1/
+         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - /orderer:/etc/hyperledger/orderer
+      extra_hosts:
+         - "ca-tls.inuit.local:192.168.176.101"
+         - "rca-org0.inuit.local:192.168.176.101"
+         - "rca-org1.inuit.local:192.168.176.101"
+         - "cli-org0.inuit.local:192.168.176.104"
+         - "ord2-org1.inuit.local:192.168.176.104"
+         - "cli-org1.inuit.local:192.168.176.103"
+         - "ord2-org2.inuit.local:192.168.176.103"
+         - "peer1-org1.inuit.local:192.168.176.103"
+         - "ord1-org1.inuit.local:192.168.176.103"
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+      networks:
+         - fabric-host5
+      ports:
+         - 7050:7050
+
+
+   cli-org2:
+      container_name: cli-org2.inuit.local
+      image: hyperledger/fabric-tools
+      tty: true
+      stdin_open: true
+      environment:
+         - GOPATH=/opt/gopath
+         - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+         - FABRIC_LOGGING_SPEC=DEBUG
+         - CORE_PEER_ID=cli-org2.inuit.local
+         - CORE_PEER_ADDRESS=peer1-org2.inuit.local:10051
+         - CORE_PEER_LOCALMSPID=org2MSP
+         - CORE_PEER_TLS_ENABLED=true
+         - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/org2/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/peer1/msp
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org2
+      command: sh
+      volumes:
+         - /etc/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
+         - /etc/hyperledger/org2/peer1/assets/chaincode:/opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode
+         - /etc/hyperledger/org2/admin:/etc/hyperledger/org2/admin
+      extra_hosts:
+         - "ca-tls.inuit.local:192.168.176.101"
+         - "rca-org0.inuit.local:192.168.176.101"
+         - "rca-org1.inuit.local:192.168.176.101"
+         - "cli-org0.inuit.local:192.168.176.104"
+         - "ord2-org1.inuit.local:192.168.176.104"
+         - "cli-org1.inuit.local:192.168.176.103"
+         - "ord2-org2.inuit.local:192.168.176.103"
+         - "peer1-org1.inuit.local:192.168.176.103"
+         - "ord1-org1.inuit.local:192.168.176.103"
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+      networks:
+         - fabric-host5
