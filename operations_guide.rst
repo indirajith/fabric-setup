@@ -3,6 +3,10 @@ Fabric Network Setup Manual
 
 This manual illustrates how to setup Fabric network with Fabric-CA 
 and RAFT consensus on multiple hosts. 
+
+.. note:: This manual is an updated/modified version of the official guide
+of Fabric-CA operations guide available on: `<https://hyperledger-fabric-ca.readthedocs.io/en/latest/operations_guide.html>`_.
+
 All identities that participate on a Hyperledger Fabric
 blockchain network must be authorized. This authorization
 is provided in the form of cryptographic material that is
