@@ -21,7 +21,7 @@ In this example, we will look at how to setup up an orderer, peers, and CAs
 across two organizations. The topology of this deployment can be seen in the
 image below:
 
-.. image:: ./images/network_topology.png
+.. image:: ./images/network_topology_v2.png
 
 This example will simulate a deployment using docker containers. The
 containers are running on different host machines. This is done so that you can see 
@@ -33,7 +33,32 @@ As the deployment is spread across different networks, the
 example has extra hosts defined in the docker-composer file for each containers.
 
 The documentation provides docker-compose files for per host basis. One can easily understand
-the containers in each host from the docker-compose file and the topology diagram.
+the containers in each host from the docker-compose files and the topology diagram.
+
+Components Description
+^^^^^^^^^^^^^^^^^^^^^^
+
+In the topology each column shows a host. The top box shows the IP of the host and the boxes under them
+depicts the containers that particular host contains.
+
+Certificate Authority (CA) provides the following functionalities:
+   "*" Registration of identities
+   "*" Issuance of enrollment certificates
+   "*" Certificate renewal and revocation
+
+Fabric-CA consists of both server and client. 
+
+To make communication between several components and nodes of fabric network secure, we use TLS. It's
+recommended not to use same CA for both communication and organisational enrollment. For this purpose 
+we use separate CA for TLS communication. But we this manual uses same TLS CA for all the organisations.
+TLS CA provides x509 certificates for all the nodes of the network. 
+
+This manual uses separate CAs for each organisations, org1 and org2. These organisational CAs provide
+enrollment certificates for the components of their respective organisations like, peers, orderers, clients,
+admins, amd clients. 
+
+Peers in the tutorial uses CouchDB as their world state database. each peer has its own CouchDB. Peers
+spin up their respective couchdb database containers which are specified in the peer's docker-compose files.
 
 
 Setup CAs
@@ -46,8 +71,36 @@ For each host that needs to acquire cryptographic material, you will need to hav
 fabric-ca-client binary available on the host machine. The client will be used to
 connect to the Fabric CA server container.
 
-To download the fabric-ca-client binary, browse to this  `repository <https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric-ca/hyperledger-fabric-ca/>`_ and
-select the latest binary for your machine.
+The 'fabric-ca-client' command is used on the host machine. So we need to have fabric-ca-client binary 
+installed on the hosts from which we want to issue enrollment commands. With this way the crypto
+materials don't leave the host where the containers need them. 
+Please refer the following link to understand how to install fabric-ca on the hosts machines:
+`<https://hyperledger-fabric-ca.readthedocs.io/en/release-1.4/users-guide.html>`_.
+
+To install fabric-ca binaries:
+Prereqs:
+Go 1.10+
+GOPATH environment variable set correctly
+libtool and libtdhl-dev packages installed
+
+For Ubuntu:
+.. code:: bash
+
+   sudo apt install libtool libltdl-dev
+
+For MacOSX:
+.. code:: bash
+
+   brew install libtool
+
+Install
+The following installs both the fabric-ca-server and fabric-ca-client binaries in $GOPATH/bin.
+.. code:: bash
+   go get -u github.com/hyperledger/fabric-ca/cmd/...
+
+Note: If you have already cloned the fabric-ca repository, make sure you are on the master branch 
+before running the ‘go get’ command above. Otherwise, you might see an error.
+
 
 This manual uses fabric-ca in docker images we don't need to install them natively on the hosts.
 
@@ -75,41 +128,71 @@ fabric-ca-server-config.yaml file to be created. That can then be costomised wit
 if needed. Then we can change the command in the docker-compose command for CA containers to start. 
 which will start the containers with our specification. 
 
+Start Server Natively
+The following starts the fabric-ca-server with default settings.
+.. code:: bash
+  fabric-ca-server start -b admin:adminpw
+
+Initializing the server
+Initialize the Fabric CA server as follows:
+..code:: bash
+   fabric-ca-server init -b admin:adminpw
+
+The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
+..code:: bash
+   cn: fabric-ca-server
+   names:
+      - C: US
+        ST: "North Carolina"
+        L:
+        O: Hyperledger
+        OU: Fabric
+   hosts:
+     - host1.example.com
+     - localhost
+   ca:
+      expiry: 131400h
+      pathlength: 1
+
+      
+We can change the CSR section according to our need. To avoid copy paste errors, it's recommanded to use the ``docker-compose.yaml``
+files. The sections provided below is to get an idea of what we are discussing.
+
 A docker service, such as the one below can be used to a launch a Fabric TLS CA
 container.
 
 .. code:: yaml
 
-version: '2'
+   version: '2'
 
-networks:
-   fabric-host1:
+   networks:
+      fabric-host1:
 
-services:
-   ca-tls:
-      container_name: ca-tls.inuit.local
-      image: hyperledger/fabric-ca:1.4.0
-      command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
-      environment:
-         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-tlsca/crypto
-         - FABRIC_CA_SERVER_TLS_ENABLED=true
-         - FABRIC_CA_SERVER_NAME=ca-tls.inuit.local
-         - FABRIC_CA_SERVER_CSR_CN=ca-tls.inuit.local
-         - FABRIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local,localhost,0.0.0.0
-         - FABRIC_CA_SERVER_DEBUG=true
-      volumes:
-         - /etc/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
-      networks:
-         - fabric-host1
-      ports:
-         - 7052:7052
+   services:
+      ca-tls:
+         container_name: ca-tls.inuit.local
+         image: hyperledger/fabric-ca:1.4.0
+         command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+         environment:
+            - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-tlsca/crypto
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_NAME=ca-tls.inuit.local
+            - FABRIC_CA_SERVER_CSR_CN=ca-tls.inuit.local
+            - FABRIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local,localhost,0.0.0.0
+            - FABRIC_CA_SERVER_DEBUG=true
+         volumes:
+            - /etc/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
+         networks:
+            - fabric-host1
+         ports:
+            - 7052:7052
 
 This container can be started using the following docker command.
 
 .. code:: bash
 
     docker-compose up ca-tls 
-    docker-compose up -d ca-tls # -d for detached mode. ca-tls : Sevice name defined in docker-compose file.
+    docker-compose up -d ca-tls # -d for detached mode. ca-tls : Service name defined in docker-compose file.
 
 On a successful launch of the container, you will see the following line in
 the CA container's log.
@@ -168,11 +251,7 @@ TLS-CA admin can directly enrolled without registration as it is the bootstrap i
    fabric-ca-client register -d --id.name peer2-org1 --id.secret peer2o1PW --id.type peer -u https://localhost:7052
    fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1o2PW --id.type peer -u https://localhost:7052
    fabric-ca-client register -d --id.name peer2-org2 --id.secret peer2o2PW --id.type peer -u https://localhost:7052
-   fabric-ca-client register -d --id.name ord1-org0 --id.secret ord1o0PW --id.type orderer -u https://localhost:7052
-   fabric-ca-client register -d --id.name ord2-org0 --id.secret ord2o0PW --id.type orderer -u https://localhost:7052
-   fabric-ca-client register -d --id.name ord3-org0 --id.secret ord3o0PW --id.type orderer -u https://localhost:7052
-   fabric-ca-client register -d --id.name ord4-org0 --id.secret ord4o0PW --id.type orderer -u https://localhost:7052
-
+   
    fabric-ca-client register -d --id.name ord1-org1 --id.secret ord1o1PW --id.type orderer -u https://localhost:7052
    fabric-ca-client register -d --id.name ord2-org1 --id.secret ord2o1PW --id.type orderer -u https://localhost:7052
    fabric-ca-client register -d --id.name ord1-org2 --id.secret ord1o2PW --id.type orderer -u https://localhost:7052
@@ -363,58 +442,6 @@ Enroll Peer1
 
 If the host machine running Peer1 does not have the fabric-ca-client binary,
 refer to the instructions above on to download the binary.
-
-The 'fabric-ca-client' command is used on the host machine. So we need to have fabric-ca-client binary 
-installed on the hosts from which we want to issue enrollment commands. With this way the crypto
-materials don't leave the host where the containers need them. To install fabric-ca binaries:
-Prereqs:
-Go 1.10+
-GOPATH environment variable set correctly
-libtool and libtdhl-dev packages installed
-
-For Ubuntu:
-.. code:: bash
-
-   sudo apt install libtool libltdl-dev
-
-For MacOSX:
-.. code:: bash
-
-   brew install libtool
-
-Install
-The following installs both the fabric-ca-server and fabric-ca-client binaries in $GOPATH/bin.
-.. code:: bash
-   go get -u github.com/hyperledger/fabric-ca/cmd/...
-
-Note: If you have already cloned the fabric-ca repository, make sure you are on the master branch 
-before running the ‘go get’ command above. Otherwise, you might see an error.
-
-Start Server Natively
-The following starts the fabric-ca-server with default settings.
-.. code:: bash
-  fabric-ca-server start -b admin:adminpw
-
-Initializing the server
-Initialize the Fabric CA server as follows:
-..code:: bash
-   fabric-ca-server init -b admin:adminpw
-
-The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
-..code:: bash
-   cn: fabric-ca-server
-   names:
-      - C: US
-        ST: "North Carolina"
-        L:
-        O: Hyperledger
-        OU: Fabric
-   hosts:
-     - host1.example.com
-     - localhost
-   ca:
-      expiry: 131400h
-      pathlength: 1
 
 In the command below, we will assume the trusted root certificate of Org1 has
 been copied to ``/etc/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem``
