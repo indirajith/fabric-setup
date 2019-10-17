@@ -16,7 +16,7 @@ services:
          - FABRIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
+         - ~/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
       networks:
          - fabric-host1
       ports:
@@ -34,7 +34,7 @@ services:
          - FABRIC_CA_SERVER_CSR_HOSTS=rca-org0.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/org0/ca:/etc/hyperledger/fabric-org0-rca
+         - ~/hyperledger/org0/ca:/etc/hyperledger/fabric-org0-rca
       networks:
          - fabric-host1
       ports:
@@ -52,7 +52,7 @@ services:
          - FABRIC_CA_SERVER_CSR_HOSTS=rca-org1.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/org1/ca:/etc/hyperledger/fabric-org1-rca
+         - ~/hyperledger/org1/ca:/etc/hyperledger/fabric-org1-rca
       networks:
          - fabric-host1
       ports:

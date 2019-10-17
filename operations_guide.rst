@@ -42,9 +42,9 @@ In the topology each column shows a host. The top box shows the IP of the host a
 depicts the containers that particular host contains.
 
 Certificate Authority (CA) provides the following functionalities:
-   "*" Registration of identities
-   "*" Issuance of enrollment certificates
-   "*" Certificate renewal and revocation
+   - Registration of identities
+   - Issuance of enrollment certificates
+   - Certificate renewal and revocation
 
 Fabric-CA consists of both server and client. 
 
@@ -84,17 +84,20 @@ GOPATH environment variable set correctly
 libtool and libtdhl-dev packages installed
 
 For Ubuntu:
+
 .. code:: bash
 
    sudo apt install libtool libltdl-dev
 
 For MacOSX:
+
 .. code:: bash
 
    brew install libtool
 
 Install
 The following installs both the fabric-ca-server and fabric-ca-client binaries in $GOPATH/bin.
+
 .. code:: bash
    go get -u github.com/hyperledger/fabric-ca/cmd/...
 
@@ -130,6 +133,7 @@ which will start the containers with our specification.
 
 Start Server Natively
 The following starts the fabric-ca-server with default settings.
+
 .. code:: bash
   fabric-ca-server start -b admin:adminpw
 
@@ -139,6 +143,7 @@ Initialize the Fabric CA server as follows:
    fabric-ca-server init -b admin:adminpw
 
 The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
+
 ..code:: bash
    cn: fabric-ca-server
    names:
@@ -181,7 +186,7 @@ container.
             - FABRIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local,localhost,0.0.0.0
             - FABRIC_CA_SERVER_DEBUG=true
          volumes:
-            - /etc/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
+            - ~/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
          networks:
             - fabric-host1
          ports:
@@ -235,15 +240,16 @@ certificates for peers and orderers.
 
 You will issue the commands below to enroll the TLS CA admin and then register
 identities. We assume the trusted root certificate for the TLS CA has been copied
-to ``/etc/hyperledger/tls/ca/crypto/ca-cert.pem`` on all host machines that
-will communicate with this CA via the fabric-ca-client.
+to ``~/hyperledger/tls/ca/crypto/ca-cert.pem`` on all host machines that
+will communicate with this CA via the fabric-ca-client. This directory is mapped to
+``/etc/hyperledger/tls/ca/crypto/ca-cert.pem`` in the container.
 
 TLS-CA admin can directly enrolled without registration as it is the bootstrap identity.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/tls/ca/crypto/ca-cert.pem
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/tls/ca/admin
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/tls/ca/crypto/ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/tls/ca/admin
 
 
    fabric-ca-client enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
@@ -299,7 +305,7 @@ container.
          - FABRIC_CA_SERVER_CSR_HOSTS=rca-org1.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/org1/ca:/etc/hyperledger/fabric-org1-rca
+         - ~/hyperledger/org1/ca:/etc/hyperledger/fabric-org1-rca
       networks:
          - fabric-host1
       ports:
@@ -334,15 +340,15 @@ The following identies are being registered:
 
 In the commands below, we will assume the trusted root certificate for the CA's
 TLS certificate has been copied to
-``/etc/hyperledger/org1/ca/crypto/ca-cert.pem``
-on the host machine where the fabric-ca-client binary is present.
+``~/home/hyperledger/org1/ca/crypto/ca-cert.pem``
+on the host machine where the fabric-ca-client binary is present. (mapped to /etc/hyperledger/<respective_directory>)
 If the client's binary is located on a different host, you will need to get the
 signing certificate through an out-of-band process.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/ca/crypto/ca-cert.pem
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/ca/admin
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/ca/crypto/ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ca/admin
 
    fabric-ca-client enroll -d -u https://rca-org1-admin:rca-org1-adminpw@0.0.0.0:7054
 
@@ -386,7 +392,7 @@ services:
          - FABRIC_CA_SERVER_CSR_HOSTS=rca-org2.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
+         - ~/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
       networks:
          - fabric-host5
       ports:
@@ -408,12 +414,12 @@ Enrolling Org2's CA Admin
 You will issue the commands below to get the CA admin enrolled and all peer
 related identities registered. In the commands below, we will assume the trusted
 root certificate of CA's TLS certificate has been copied to
-``/etc/hyperledger/org2/ca/crypto/ca-cert.pem``.
+``~/hyperledger/org2/ca/crypto/ca-cert.pem``.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/ca/crypto/ca-cert.pem
-   export FABRIC_CA_CLIENT_HOME=/tmp/hyperledger/org2/ca/admin
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/ca/crypto/ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ca/admin
    
    fabric-ca-client enroll -d -u https://rca-org2-admin:rca-org2-adminpw@0.0.0.0:7055
    fabric-ca-client register -d --id.name peer1-org2 --id.secret peer1o2PW --id.type peer -u https://0.0.0.0:7055
@@ -450,9 +456,9 @@ band process.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/peer1
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
-   sudo chown -R <user> /etc/hyperledger
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/peer1
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
+   # sudo chown -R <user> /etc/hyperledger
    fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@rca-org1.inuit.local:7054
 
 Next step is to get the TLS cryptographic material for the peer. This requires another enrollment,
@@ -460,16 +466,16 @@ but this time you will enroll against the ``tls`` profile on the TLS CA. You wil
 also need to provide the address of the Peer1's host machine in the enrollment
 request as the input to the ``csr.hosts`` flag. In the command below, we will
 assume the certificate of the TLS CA has been copied to
-``/etc/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem``
+``~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem``
 on Peer1's host machine.
 
 .. code:: bash
 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp          
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer1-org1.inuit.local
 
-Go to path ``/etc/hyperledger/org1/peer1/tls-msp/keystore`` and change the name of
+Go to path ``~/hyperledger/org1/peer1/tls-msp/keystore`` and change the name of
 the key to ``key.pem``. This will make it easy to be able to refer to in
 later steps.
 
@@ -484,13 +490,13 @@ Enroll Peer2 Org1
 
 You will perform similar commands for Peer2. In the commands below, we will
 assume the trusted root certificate of Org1 has been copied to
-``/etc/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem`` on Peer2's host
+``~/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem`` on Peer2's host
 machine.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/peer2/
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/peer2/
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer2-org1:peer2o1PW@rca-org1.inuit.local:7054
 
 Next step is to get the TLS cryptographic material for the peer. This requires another enrollment,
@@ -498,16 +504,16 @@ but this time you will enroll against the ``tls`` profile on the TLS CA. You wil
 also need to provide the address of the Peer2's host machine in the enrollment
 request as the input to the ``csr.hosts`` flag. In the command below, we will
 assume the certificate of the TLS CA has been copied to
-``/etc/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem``
+``~/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem``
 on Peer2's host machine.
 
 .. code:: bash
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/peer2/
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/peer2/
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer2-org1:peer2o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer2-org1.inuit.local
 
-Go to path ``/etc/hyperledger/org1/peer2/tls-msp/keystore`` and change the name of
+Go to path ``~/hyperledger/org1/peer2/tls-msp/keystore`` and change the name of
 the key to ``key.pem``. This will make it easy to be able to refer to in
 later steps.
 
@@ -525,8 +531,8 @@ The commands below assumes that this is being executed on Peer1's host machine.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/admin
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/admin
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
    export FABRIC_CA_CLIENT_MSPDIR=msp
    fabric-ca-client enroll -d -u https://admin-org1:org1AdminPW@rca-org1.inuit.local:7054
 
@@ -540,8 +546,8 @@ happen out-of-band.
 
 .. code:: bash
 
-    mkdir /etc/hyperledger/org1/peer1/msp/admincerts
-    cp /etc/hyperledger/org1/admin/msp/signcerts/cert.pem /etc/hyperledger/org1/peer1/msp/admincerts/org1-admin-cert.pem
+    mkdir ~/hyperledger/org1/peer1/msp/admincerts
+    cp ~/hyperledger/org1/admin/msp/signcerts/cert.pem ~/hyperledger/org1/peer1/msp/admincerts/org1-admin-cert.pem
 
 If the ``admincerts`` folder is missing from the peer's local MSP, the peer will
 fail to start up.
@@ -585,8 +591,8 @@ copy paste errors. The approproate sections are given below for reference and be
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org1/peer1
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org1/peer1:/etc/hyperledger/org1/peer1
-         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - ~/hyperledger/org1/peer1:/etc/hyperledger/org1/peer1
+         - ~/hyperledger/misc:/etc/hyperledger/misc
       depends_on:
          - couchdbp1o1
       extra_hosts:
@@ -658,8 +664,8 @@ Peer2. Peer1 is on host 103 and peer2 is on host 104. Copy them accordingly.
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org1/peer2
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org1/peer2:/etc/hyperledger/org1/peer2
-         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - ~/hyperledger/org1/peer2:/etc/hyperledger/org1/peer2
+         - ~/hyperledger/misc:/etc/hyperledger/misc
       extra_hosts:
          - "peer1-org1.inuit.local:192.168.176.103"
          - "ord1-org1.inuit.local:192.168.176.103"
@@ -733,7 +739,7 @@ Peer2. Peer1 is on host 103 and peer2 is on host 104. Copy them accordingly.
          - couchdbp2o2
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org2/peer2:/etc/hyperledger/org2/peer2
+         - ~/hyperledger/org2/peer2:/etc/hyperledger/org2/peer2
       networks:
          - fabric-host4
       ports:
@@ -769,16 +775,16 @@ Enroll Peer1
 
 You will issue the commands below to enroll Peer1. In the commands below,
 we will assume the trusted root certificate of Org2 is available at
-``/etc/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem`` on Peer1's host machine.
+``~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem`` on Peer1's host machine.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org2/peer1
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/peer1
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer1-org2:peer1o2PW@rca-org2.inuit.local:7055
 
 Next, you will get the TLS certificate. In the command below, we will assume the
-certificate of the TLS CA has been copied to ``/etc/hyperledger/org2/peer1/assets/tls-ca/tls-ca-cert.pem``
+certificate of the TLS CA has been copied to ``~/hyperledger/org2/peer1/assets/tls-ca/tls-ca-cert.pem``
 on Peer1's host machine.
 
 .. code:: bash
@@ -787,7 +793,7 @@ on Peer1's host machine.
    export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer1-org2:peer1o2PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer1-org2.inuit.local
 
-Go to path ``/etc/hyperledger/org2/peer1/tls-msp/keystore`` and change the name of the
+Go to path ``~/hyperledger/org2/peer1/tls-msp/keystore`` and change the name of the
 key to ``key.pem``.
 
 Enroll Peer2
@@ -795,25 +801,25 @@ Enroll Peer2
 
 You will issue the commands below to get Peer2 enrolled. In the commands below,
 we will assume the trusted root certificate of Org2 is available at
-``/etc/hyperledger/org2/peer2/assets/ca/org2-ca-cert.pem`` on Peer2's host machine.
+``~/hyperledger/org2/peer2/assets/ca/org2-ca-cert.pem`` on Peer2's host machine.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org2/peer2
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer2/assets/ca/org2-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/peer2
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer2/assets/ca/org2-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer2-org2:peer2o2PW@rca-org2.inuit.local:7055
 
 Next, you will get the TLS certificate. In the command below, we will assume the
-certificate of the TLS CA has been copied to ``/tmp/hyperledger/org2/peer2/assets/tls-ca/tls-ca-cert.pem``
+certificate of the TLS CA has been copied to ``~/hyperledger/org2/peer2/assets/tls-ca/tls-ca-cert.pem``
 on Peer2's host machine.
 
 .. code:: bash
 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer2/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer2/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://peer2-org2:peer2o2PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer2-org2.inuit.local
 
-Go to path ``/etc/hyperledger/org2/peer2/tls-msp/keystore`` and change the name
+Go to path ``~/hyperledger/org2/peer2/tls-msp/keystore`` and change the name
 of the key to ``key.pem``.
 
 Enroll Org2's Admin
@@ -827,8 +833,8 @@ You will enroll the org2 admin's identity by issuing the commands below.
 
 .. code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org2/admin
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/admin
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
    export FABRIC_CA_CLIENT_MSPDIR=msp
    fabric-ca-client enroll -d -u https://admin-org2:org2AdminPW@0.0.0.0:7055
 
@@ -838,8 +844,8 @@ below are only for Peer1, the exchange of admin cert to peer2 will happen out-of
 
 .. code:: bash
 
-    mkdir /etc/hyperledger/org2/peer1/msp/admincerts
-    cp /etc/hyperledger/org2/admin/msp/signcerts/cert.pem /etc/hyperledger/org2/peer1/msp/admincerts/org2-admin-cert.pem
+    mkdir ~/hyperledger/org2/peer1/msp/admincerts
+    cp ~/hyperledger/org2/admin/msp/signcerts/cert.pem ~/hyperledger/org2/peer1/msp/admincerts/org2-admin-cert.pem
 
 If the ``admincerts`` folder is missing from the peer's local MSP, the peer will
 fail to start up.
@@ -899,40 +905,40 @@ the instructions above on to download the binary.
 
 You will issue the commands below to get the orderer enrolled. In the commands
 below, we will assume the trusted root certificates for Org1 is available in
-``/etc/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem``, and Org2 is available in
-``/etc/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem`` on the orderer's respective 
+``~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem``, and Org2 is available in
+``~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem`` on the orderer's respective 
 host machines. Please refer the topology.
 
 Enroll Ord1 Org1
 
 .. code:: bash
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/ord1
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord1
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org1:ord1o1pw@rca-org1.inuit.local:7054
 
 Next, you will get the TLS certificate. In the command below, we will assume the
-certificate of the TLS CA has been copied to ``/etc/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem``
+certificate of the TLS CA has been copied to ``~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem``
 on Orderer's host machine.
 TLS for Ord1 Org1
 
 .. code:: bash 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org1:ord1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org1.inuit.local
 
 Enroll and TLS for Ord2 Org1
 
 ..code:: bash
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org1/ord2
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord2
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org1:ord1o2pw@rca-org1.inuit.local:7054
 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org1:ord2o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord2-org1.inuit.local
 
 
-Go to path ``/etc/hyperledger/org1/<respective_orderers>/tls-msp/keystore`` and change the name
+Go to path ``~/hyperledger/org1/<respective_orderers>/tls-msp/keystore`` and change the name
 of the key to ``key.pem``.
 
 At this point, you will have two MSP directories. One MSP contains your enrollment
@@ -946,21 +952,21 @@ We will do the same for the second organisation, org2 as follows.
 Ord1 Org2
 ..code:: bash
 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org2/ord1
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ord1
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org2:ord1o2pw@rca-org2.inuit.local:7055
 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/peer1/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org2:ord1o2PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org2.inuit.local
 
 Ord2 Org2 
-   export FABRIC_CA_CLIENT_HOME=/etc/hyperledger/org2/ord2
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org2/ord2/assets/ca/org2-ca-cert.pem
+   export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ord2
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/ord2/assets/ca/org2-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org2:ord2o2pw@rca-org2.inuit.local:7055
    
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
-   export FABRIC_CA_CLIENT_TLS_CERTFILES=/etc/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
+   export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org2:ord2o2PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord2-org2.inuit.local
 
 
@@ -1045,8 +1051,8 @@ organizations. The ``organization`` section in the ``configtx.yaml`` looks like:
 
 
 The MSP for Org1 will contain the trusted root certificate of Org1,
-the certificate of the Org0's admin identity, and the trusted root certificate of
-the TLS CA. The MSP folder structure can be seen below.
+the certificate of the Org1's admin identity, and the trusted root certificate of
+the TLS CA. The MSP folder structure can be seen below. This structure is in containers.
 
 .. code:: text
 

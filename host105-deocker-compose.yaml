@@ -16,7 +16,7 @@ services:
          - FABRIC_CA_SERVER_CSR_HOSTS=rca-org2.inuit.local,localhost,0.0.0.0
          - FABRIC_CA_SERVER_DEBUG=true
       volumes:
-         - /etc/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
+         - ~/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
       networks:
          - fabric-host5
       ports:
@@ -49,7 +49,7 @@ services:
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org2/peer1
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
+         - ~/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
       extra_hosts:
          - "ca-tls.inuit.local:192.168.176.101"
          - "rca-org0.inuit.local:192.168.176.101"
@@ -105,8 +105,8 @@ services:
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric
       command: orderer
       volumes:
-         - /etc/hyperledger/org2/ord1:/etc/hyperledger/org2/ord1/
-         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - ~/hyperledger/org2/ord1:/etc/hyperledger/org2/ord1/
+         - ~/hyperledger/misc:/etc/hyperledger/misc
          - /orderer:/etc/hyperledger/orderer
       extra_hosts:
          - "ca-tls.inuit.local:192.168.176.101"
@@ -145,9 +145,9 @@ services:
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org2
       command: sh
       volumes:
-         - /etc/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
-         - /etc/hyperledger/org2/peer1/assets/chaincode:/opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode
-         - /etc/hyperledger/org2/admin:/etc/hyperledger/org2/admin
+         - ~/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
+         - ~/hyperledger/org2/peer1/assets/chaincode:/opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode
+         - ~/hyperledger/org2/admin:/etc/hyperledger/org2/admin
       extra_hosts:
          - "ca-tls.inuit.local:192.168.176.101"
          - "rca-org0.inuit.local:192.168.176.101"

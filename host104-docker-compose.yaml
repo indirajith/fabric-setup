@@ -31,8 +31,8 @@ services:
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org1/peer2
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org1/peer2:/etc/hyperledger/org1/peer2
-         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - ~/hyperledger/org1/peer2:/etc/hyperledger/org1/peer2
+         - ~/hyperledger/misc:/etc/hyperledger/misc
       extra_hosts:
          - "peer1-org1.inuit.local:192.168.176.103"
          - "ord1-org1.inuit.local:192.168.176.103"
@@ -106,7 +106,7 @@ services:
          - couchdbp2o2
       volumes:
          - /var/run:/host/var/run
-         - /etc/hyperledger/org2/peer2:/etc/hyperledger/org2/peer2
+         - ~/hyperledger/org2/peer2:/etc/hyperledger/org2/peer2
       networks:
          - fabric-host4
       ports:
@@ -148,8 +148,8 @@ services:
       working_dir: /opt/gopath/src/github.com/hyperledger/fabric
       command: orderer
       volumes:
-         - /etc/hyperledger/org1/ord2:/etc/hyperledger/org1/ord2/
-         - /etc/hyperledger/misc:/etc/hyperledger/misc
+         - ~/hyperledger/org1/ord2:/etc/hyperledger/org1/ord2/
+         - ~/hyperledger/misc:/etc/hyperledger/misc
          - /orderer:/etc/hyperledger/orderer
       extra_hosts:
          - "peer1-org1.inuit.local:192.168.176.103"
