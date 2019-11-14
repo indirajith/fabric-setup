@@ -220,7 +220,7 @@ Before you can start using the CA client, you must acquire the signing
 certificate for the CA's TLS certificate. This is a required step before you
 can connect using TLS.
 
-In our example, you would need to acquire the file located at ``/etc/hyperledger/tls/ca/crypto/ca-cert.pem``
+In our example, you would need to acquire the file located at ``~/hyperledger/tls/ca/crypto/ca-cert.pem``
 on the machine running the TLS CA server and copy this file over to all hosts where
 you will be running the CA client binary. This certificate, also known as the TLS
 CA's signing certificate is going to be used to validate the TLS certificate of
@@ -249,6 +249,11 @@ will communicate with this CA via the fabric-ca-client. This directory is mapped
 ``/etc/hyperledger/tls/ca/crypto/ca-cert.pem`` in the container.
 
 TLS-CA admin can directly enrolled without registration as it is the bootstrap identity.
+
+When issueing the following commands if you encounter file creation permission errors, run 'fabric-ca-client' command with sudo. For this to work, the 'fabric-ca-client' executable must be in sudo PATH variable or we must provide the absolute path to this executable. Also the environmental variables must be persisted to sudo as well. For example issue the following command instead after exporting environmental variables.
+
+.. code:: bash 
+   sudo -E /home/user1/gopath/bin/fabric-ca-client  enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
 
 .. code:: bash
 
