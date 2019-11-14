@@ -139,6 +139,7 @@ Start Server Natively
 The following starts the fabric-ca-server with default settings.
 
 .. code:: bash
+
   fabric-ca-server start -b admin:adminpw
 
 Initializing the server
@@ -148,7 +149,8 @@ Initialize the Fabric CA server as follows:
 
 The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
 
-..code:: bash
+.. code:: bash
+
    cn: fabric-ca-server
    names:
       - C: US
@@ -253,7 +255,10 @@ TLS-CA admin can directly enrolled without registration as it is the bootstrap i
 When issueing the following commands if you encounter file creation permission errors, run 'fabric-ca-client' command with sudo. For this to work, the 'fabric-ca-client' executable must be in sudo PATH variable or we must provide the absolute path to this executable. Also the environmental variables must be persisted to sudo as well. For example issue the following command instead after exporting environmental variables.
 
 .. code:: bash 
+
    sudo -E /home/user1/gopath/bin/fabric-ca-client  enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
+
+The above method has to be followed for all the fabric-ca-client commands provided bellow.
 
 .. code:: bash
 
