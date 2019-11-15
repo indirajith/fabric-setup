@@ -144,7 +144,7 @@ The following starts the fabric-ca-server with default settings.
 
 Initializing the server
 Initialize the Fabric CA server as follows:
-..code:: bash
+.. code:: bash
    fabric-ca-server init -b admin:adminpw
 
 The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
@@ -215,6 +215,11 @@ the CA container's log.
 At this point the TLA CA server is on a listening on a secure socket, and can start
 issuing TLS certificates.
 
+.. note:: Everytime when fabric-ca-server start command is issued, it generates new pair of private, public
+   key pairs. The certificates generated would have the latest key pair. At this point we can not use previously
+   generated keys and certificate with this CA server. So, remove any previously generated crypto materials
+   and start afresh. 
+
 Enroll TLS CA's Admin
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -252,7 +257,8 @@ will communicate with this CA via the fabric-ca-client. This directory is mapped
 
 TLS-CA admin can directly enrolled without registration as it is the bootstrap identity.
 
-When issueing the following commands if you encounter file creation permission errors, run 'fabric-ca-client' command with sudo. For this to work, the 'fabric-ca-client' executable must be in sudo PATH variable or we must provide the absolute path to this executable. Also the environmental variables must be persisted to sudo as well. For example issue the following command instead after exporting environmental variables.
+When issueing the following commands if you encounter file creation permission errors, run 'fabric-ca-client' command with sudo. For this to work, the 'fabric-ca-client' executable must be in sudo PATH variable or we must provide the absolute path to this executable. Also the environmental variables must be persisted to sudo as well.
+For example issue the following command with absolute path of `fabric-ca-client` binary instead, after exporting environmental variables.
 
 .. code:: bash 
 
