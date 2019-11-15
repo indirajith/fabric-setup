@@ -103,6 +103,7 @@ Install
 The following installs both the fabric-ca-server and fabric-ca-client binaries in $GOPATH/bin.
 
 .. code:: bash
+
    go get -u github.com/hyperledger/fabric-ca/cmd/...
 
 Note: If you have already cloned the fabric-ca repository, make sure you are on the master branch 
@@ -144,7 +145,9 @@ The following starts the fabric-ca-server with default settings.
 
 Initializing the server
 Initialize the Fabric CA server as follows:
+
 .. code:: bash
+
    fabric-ca-server init -b admin:adminpw
 
 The server configuration file contains a Certificate Signing Request (CSR) section that can be configured. The following is a sample CSR.
@@ -528,6 +531,7 @@ assume the certificate of the TLS CA has been copied to
 on Peer2's host machine.
 
 .. code:: bash
+
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/peer2/
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/tls-ca/tls-ca-cert.pem
@@ -932,6 +936,7 @@ host machines. Please refer the topology.
 Enroll Ord1 Org1
 
 .. code:: bash
+
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord1
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org1:ord1o1pw@rca-org1.inuit.local:7054
@@ -942,6 +947,7 @@ on Orderer's host machine.
 TLS for Ord1 Org1
 
 .. code:: bash 
+
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord1-org1:ord1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org1.inuit.local
@@ -949,6 +955,7 @@ TLS for Ord1 Org1
 Enroll and TLS for Ord2 Org1
 
 ..code:: bash
+
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord2
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org1:ord1o2pw@rca-org1.inuit.local:7054
@@ -970,6 +977,7 @@ Now, you will enroll the Org0's admin identity by issuing the commands below.
 We will do the same for the second organisation, org2 as follows.
 
 Ord1 Org2
+
 ..code:: bash
 
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ord1
