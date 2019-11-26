@@ -1,0 +1,64 @@
+version: '2'
+
+networks:
+   fabric-host5:
+
+services:
+  peer1-org2:
+      container_name: peer1-org2.inuit.local
+      image: hyperledger/fabric-peer
+      environment:
+         - CORE_PEER_ID=peer1-org2.inuit.local
+         - CORE_PEER_ADDRESS=peer1-org2.inuit.local:7051
+         - CORE_PEER_LOCALMSPID=org2MSP
+         - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/peer1/msp
+         - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+         - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric-proj_fabric-host5
+         - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdbp1o2:5984
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=peer1-org2
+         - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=p1o2cdbpw
+         - FABRIC_LOGGING_SPEC=debug
+         - CORE_PEER_TLS_ENABLED=true
+         - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/org2/peer1/tls-msp/signcerts/cert.pem
+         - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/org2/peer1/tls-msp/keystore/key.pem
+         - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/org2/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - CORE_PEER_GOSSIP_USELEADERELECTION=true
+         - CORE_PEER_GOSSIP_ORGLEADER=false
+         - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-org2.inuit.local:7051
+         - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org2/peer1
+      volumes:
+         - /var/run:/host/var/run
+         - ~/hyperledger/org2/peer1:/etc/hyperledger/org2/peer1
+      extra_hosts:
+         - "ca-tls.inuit.local:192.168.176.101"
+         - "rca-org0.inuit.local:192.168.176.101"
+         - "rca-org1.inuit.local:192.168.176.101"
+         - "cli-org0.inuit.local:192.168.176.104"
+         - "ord2-org1.inuit.local:192.168.176.104"
+         - "cli-org1.inuit.local:192.168.176.103"
+         - "ord2-org2.inuit.local:192.168.176.103"
+         - "peer1-org1.inuit.local:192.168.176.103"
+         - "ord1-org1.inuit.local:192.168.176.103"
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+      depends_on:
+         - couchdbp1o2
+      networks:
+         - fabric-host5
+      ports:
+         - "10051:7051"
+         - "10053:7053"
+
+   couchdbp1o2:
+      container_name: couchdbp1o2
+      image: hyperledger/fabric-couchdb
+      environment:
+         - COUCHDB_USER=peer1-org2
+         - COUCHDB_PASSWORD=p1o2cdbpw
+      ports:
+         - "5984:5984"
+      networks:
+         - fabric-host5

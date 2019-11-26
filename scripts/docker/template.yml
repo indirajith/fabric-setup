@@ -1,0 +1,22 @@
+version: '2'
+
+networks:
+  - fabric
+services:
+  ca:
+    image: hyperledger/fabric-ca:1.4.4
+    container_name: ${FABRIC_CA_SERVER_NAME}
+    command: sh -c 'fabric-ca-server ${SINIT} -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+    environment:
+      - FABRIC_CA_SERVER_HOME=${FABRIC_CA_SERVER_HOME}
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_NAME=${FABRIC_CA_SERVER_NAME}
+      - FABRIC_CA_SERVER_CSR_CN=${FABRIC_CA_SERVER_CSR_CN}
+      - FABRIC_CA_SERVER_CSR_HOSTS=${FABRIC_CA_SERVER_CSR_HOSTS}
+      # - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ~/hyperledger/${FABRIC_CA_SERVER_NAME}/ca:${FABRIC_CA_SERVER_HOME}
+    networks:
+      - fabric
+    ports:
+      - 7052:7052

@@ -1,0 +1,6 @@
+services:
+  ca-org1:
+    extends: 
+      file: template.yml
+      service: ca
+  

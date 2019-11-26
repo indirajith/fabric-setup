@@ -1,0 +1,23 @@
+version: '2'
+
+networks:
+   fabric-host1:
+
+services:
+   ca-tls:
+      container_name: ca-tls.inuit.local
+      image: hyperledger/fabric-ca:1.4.0
+      command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+      environment:
+         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-tlsca/crypto
+         - FABRIC_CA_SERVER_TLS_ENABLED=true
+         - FABRIC_CA_SERVER_NAME=ca-tls.inuit.local
+         - FABRIC_CA_SERVER_CSR_CN=ca-tls.inuit.local
+         - FABRIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local,localhost,0.0.0.0
+         - FABRIC_CA_SERVER_DEBUG=true
+      volumes:
+         - ~/hyperledger/tls/ca:/etc/hyperledger/fabric-tlsca
+      networks:
+         - fabric-host1
+      ports:
+         - 7052:7052

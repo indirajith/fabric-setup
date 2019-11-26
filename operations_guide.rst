@@ -267,6 +267,8 @@ TLS-CA admin can directly enrolled without registration as it is the bootstrap i
 When issueing the following commands if you encounter file creation permission errors, run 'fabric-ca-client' command with sudo. For this to work, the 'fabric-ca-client' executable must be in sudo PATH variable or we must provide the absolute path to this executable. Also the environmental variables must be persisted to sudo as well.
 For example issue the following command with absolute path of `fabric-ca-client` binary instead, after exporting environmental variables.
 
+------Whenever we create a directory or files using `fabric-ca-server`, or `fabric-ca-client` commands, the 
+
 .. code:: bash 
 
    sudo -E /home/user1/gopath/bin/fabric-ca-client  enroll -d -u https://tls-ca-admin:tls-ca-adminpw@0.0.0.0:7052
@@ -373,7 +375,7 @@ If the client's binary is located on a different host, you will need to get the
 signing certificate through an out-of-band process.
 
 .. code:: bash
-
+   
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/ca/crypto/ca-cert.pem
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ca/admin
 
@@ -385,7 +387,7 @@ signing certificate through an out-of-band process.
    fabric-ca-client register -d --id.name user-org1 --id.secret org1UserPW --id.type user -u https://0.0.0.0:7054
 
    fabric-ca-client register -d --id.name ord1-org1 --id.secret ord1o1pw --id.type orderer -u https://0.0.0.0:7054
-   fabric-ca-client register -d --id.name ord2-org1 --id.secret ord1o2pw --id.type orderer -u https://0.0.0.0:7054export FABRIC_CA_CLIENT_TLS_CERTFILES=/tmp/hyperledger/org1/ca/crypto/ca-cert.pem
+   fabric-ca-client register -d --id.name ord2-org1 --id.secret ord1o2pw --id.type orderer -u https://0.0.0.0:7054
    
 
 Setup Org2's CA
@@ -401,29 +403,29 @@ are available in the project directory.
 
 .. code:: yaml
 
-version: '2'
-
-networks:
-   fabric-host5:
-
-services:
-   rca-org2:
-      container_name: rca-org2.inuit.local
-      image: hyperledger/fabric-ca
-      command: sh -c 'fabric-ca-server start -d -b rca-org2-admin:rca-org2-adminpw --port 7055'
-      environment:
-         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-org2-rca/crypto
-         - FABRIC_CA_SERVER_NAME=rca-org2.inuit.local
-         - FABRIC_CA_SERVER_TLS_ENABLED=true
-         - FABRIC_CA_SERVER_CSR_CN=rca-org2.inuit.local
-         - FABRIC_CA_SERVER_CSR_HOSTS=rca-org2.inuit.local,localhost,0.0.0.0
-         - FABRIC_CA_SERVER_DEBUG=true
-      volumes:
-         - ~/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
-      networks:
-         - fabric-host5
-      ports:
-         - 7055:7055
+   version: '2'
+   
+   networks:
+      fabric-host5:
+   
+   services:
+      rca-org2:
+         container_name: rca-org2.inuit.local
+         image: hyperledger/fabric-ca
+         command: sh -c 'fabric-ca-server start -d -b rca-org2-admin:rca-org2-adminpw --port 7055'
+         environment:
+            - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-org2-rca/crypto
+            - FABRIC_CA_SERVER_NAME=rca-org2.inuit.local
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_CSR_CN=rca-org2.inuit.local
+            - FABRIC_CA_SERVER_CSR_HOSTS=rca-org2.inuit.local,localhost,0.0.0.0
+            - FABRIC_CA_SERVER_DEBUG=true
+         volumes:
+            - ~/hyperledger/org2/ca:/etc/hyperledger/fabric-org2-rca
+         networks:
+            - fabric-host5
+         ports:
+            - 7055:7055
 
 On a successful launch of the container, you will see the following line in
 the CA container's log.
@@ -958,7 +960,7 @@ TLS for Ord1 Org1
 
 Enroll and TLS for Ord2 Org1
 
-..code:: bash
+.. code:: bash
 
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord2
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer2/assets/ca/org1-ca-cert.pem
@@ -982,7 +984,7 @@ We will do the same for the second organisation, org2 as follows.
 
 Ord1 Org2
 
-..code:: bash
+.. code:: bash
 
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ord1
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/peer1/assets/ca/org2-ca-cert.pem
@@ -993,6 +995,9 @@ Ord1 Org2
    fabric-ca-client enroll -d -u https://ord1-org2:ord1o2PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org2.inuit.local
 
 Ord2 Org2 
+
+.. code:: bash
+
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org2/ord2
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org2/ord2/assets/ca/org2-ca-cert.pem
    fabric-ca-client enroll -d -u https://ord2-org2:ord2o2pw@rca-org2.inuit.local:7055
@@ -1127,29 +1132,31 @@ following commands from the directory in which ``configtx.yaml`` is present:
 This will generate two artifacts, ``genesis.block`` and ``twoorgschannel.tx``, which will
 be used in later steps.
 
-# Commands for gathering certificates
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-# The Fabric CA client has a couple commands that are useful in acquiring the certificates
-# for the orderer genesis and peer MSP setup.
-# 
-# The first command is the `fabric-ca-client certificate` command. This command can be used
-# to get certificates for the admincers folder. For more information on how to use this command
-# , please refer to: `listing certificate information <https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#listing-certificate-information>`__
-# 
-# The second command is the `fabric-ca-client getcainfo` command. This command can be used to gather
-# certificates for the `cacerts` and `tlscacerts` folders. The `getcainfo` command returns back the
-# certificate of the CA.
-# 
-# Mutual TLS
-# ^^^^^^^^^^^^
-# 
-# Endpoints can be secured using Mutual TLS as well. If the CA, Peer, or Orderer are using mutual
-# TLS then the client must also present a TLS certificate that will be verified by the server.
-# 
-# Mutual TLS requires the client to acquire a TLS certificate that it will present to the server.
-# Acquiring a TLS certificate can be done via a TLS certificate authority that does have mutual TLS enabled.
-# Once the client has aquired a TLS certificate, then it can start communication with mutual TLS enabled servers aslong as the trusted TLS authority on the server is the same as issuing authority for the client's TLS certificate.
+.. code:: bash
+
+   # Commands for gathering certificates
+   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   # 
+   # The Fabric CA client has a couple commands that are useful in acquiring the certificates
+   # for the orderer genesis and peer MSP setup.
+   # 
+   # The first command is the `fabric-ca-client certificate` command. This command can be used
+   # to get certificates for the admincers folder. For more information on how to use this command
+   # , please refer to: `listing certificate information <https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html#listing-certificate-information>`__
+   # 
+   # The second command is the `fabric-ca-client getcainfo` command. This command can be used to gather
+   # certificates for the `cacerts` and `tlscacerts` folders. The `getcainfo` command returns back the
+   # certificate of the CA.
+   # 
+   # Mutual TLS
+   # ^^^^^^^^^^^^
+   # 
+   # Endpoints can be secured using Mutual TLS as well. If the CA, Peer, or Orderer are using mutual
+   # TLS then the client must also present a TLS certificate that will be verified by the server.
+   # 
+   # Mutual TLS requires the client to acquire a TLS certificate that it will present to the server.
+   # Acquiring a TLS certificate can be done via a TLS certificate authority that does have mutual TLS enabled.
+   # Once the client has aquired a TLS certificate, then it can start communication with mutual TLS enabled servers aslong as the trusted TLS authority on the server is the same as issuing authority for the client's TLS certificate.
 
 Launch Orderer
 ^^^^^^^^^^^^^^^
