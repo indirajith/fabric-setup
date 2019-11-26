@@ -83,8 +83,46 @@ createGenesis() {
    mkdir -p ~/hyperledger/org1/msp/{admincerts,cacerts,tlscerts,users}
    mkdir -p ~/hyperledger/org2/msp/{admincerts,cacerts,tlscerts,users}
 
-   
+   # Copy the certificates of admins, root cas, tlscas and config.yaml files under the 
+   # respective directories created above
+
+   # Make sure the location of 'configtxgen' binary is correct bellow
+   ./configtxgen -profile SampleMultiNodeEtcdRaft -channelID orderersyschannel -outputBlock genesis.block
+   ./configtxgen -profile TwoOrgsChannel -outputCreateChannelTx twoorgschannel.tx -channelID twoorgschannel
+
 }
+
+LaunchOrd() {
+   # Docker-compose file , docker-compose up
+}
+
+createCLI() {
+
+}
+
+createJoinChannel() {
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org1/admin/msp
+   peer channel create -c twoorgschannel -f /etc/hyperledger/org1/peer1/assets/twoorgschannel.tx -o ord1-org1.inuit.local:7050 --outputBlock /etc/hyperledger/org1/peer1/assets/twoorgschannel.block --tls --cafile /etc/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org1/admin/msp
+   export CORE_PEER_ADDRESS=peer1-org1.inuit.local:7051
+   peer channel join -b /etc/hyperledger/org1/peer1/assets/twoorgschannel.block
+
+   export CORE_PEER_ADDRESS=peer2-org1.inuit.local:8051
+   peer channel join -b /etc/hyperledger/org1/peer1/assets/twoorgschannel.block
+
+}
+
+installInstanChaincode() {
+   export CORE_PEER_ADDRESS=peer1-org1.inuit.local:7051
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org1/admin/msp
+   peer chaincode install -n mycc -v 1.0 -p github.com/hyperledger/fabric-samples/chaincode/abac/go
+
+   export CORE_PEER_ADDRESS=peer2-org1.inuit.local:8051
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org1/admin/msp
+   peer chaincode install -n mycc -v 1.0 -p github.com/hyperledger/fabric-samples/chaincode/abac/go
+}
+
 
 if [ $1 = peer ]; then
 do

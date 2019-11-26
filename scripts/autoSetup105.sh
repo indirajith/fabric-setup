@@ -121,6 +121,34 @@ enrollOrd() {
    done
 }
 
+launchOrd() {
+   # Docker-compose file , docker-compose up
+}
 
+createCLI() {
+
+}
+
+createJoinChannel() {
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/admin/msp
+   export CORE_PEER_ADDRESS=peer1-org2.inuit.local:7051 # cli and this peer on same host local host network
+   # so 7051 not 10051
+   peer channel join -b /etc/hyperledger/org2/peer1/assets/twoorgschannel.block
+
+   export CORE_PEER_ADDRESS=peer2-org2.inuit.local:9051
+   peer channel join -b /etc/hyperledger/org2/peer1/assets/twoorgschannel.block
+}
+
+installInstanChaincode() {
+   export CORE_PEER_ADDRESS=peer1-org2.inuit.local:7051
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/admin/msp
+   peer chaincode install -n mycc -v 1.0 -p github.com/hyperledger/fabric-samples/chaincode/abac/go
+
+   export CORE_PEER_ADDRESS=peer2-org2.inuit.local:9051
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org2/admin/msp
+   peer chaincode install -n mycc -v 1.0 -p github.com/hyperledger/fabric-samples/chaincode/abac/go
+
+   peer chaincode instantiate -C twoorgschannel -n mycc -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -o ord1-org1.inuit.local:7050 --tls --cafile /etc/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+}
 
 launchO2peer ../peer2-o2-docker-compose.yaml

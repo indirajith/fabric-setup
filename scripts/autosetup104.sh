@@ -110,3 +110,8 @@ enrollOrd() {
    done
  
 }
+
+launchOrd() {
+   # Docker-compose file , docker-compose up
+}
+
