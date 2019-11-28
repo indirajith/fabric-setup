@@ -1,12 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 set -ex
 getFabCA() {
-   sudo apt -y install libtool libltdl-dev
-   go get -u github.com/hyperledger/fabric-ca/cmd/...
-   if [ $? -ne 0 ]; then
-      echo "Error! getting fabric-ca binaries."
-      exit 1
+   if ! type fabric-ca-server >/dev/null
+   then
+      sudo apt -y install libtool libltdl-dev
+      go get -u github.com/hyperledger/fabric-ca/cmd/...
+      if [ $? -ne 0 ]; then
+         echo "Error! getting fabric-ca binaries."
+         exit 1
+      fi
    fi
 }
 
@@ -18,7 +21,7 @@ enrollPeer() {
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/peer1
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
 
-   sudo -E /home/user1/gopath/bin/fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@rca-org1.inuit.local:7054
+   sudo -E $GOPATH/bin/fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@rca-org1.inuit.local:7054
 
 }
 
@@ -31,7 +34,7 @@ getTLScert() {
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
 
-   sudo -E /home/user1/gopath/bin/fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer1-org1.inuit.local
+   sudo -E $GOPATH/bin/fabric-ca-client enroll -d -u https://peer1-org1:peer1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts peer1-org1.inuit.local
    for key in ~/hyperledger/org1/peer1/tls-msp/keystore/*
    do 
       mv "$key" p1o1-tls-key.pem
@@ -46,7 +49,7 @@ enrollo1admin() {
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
    export FABRIC_CA_CLIENT_MSPDIR=msp
 
-   sudo -E /home/user1/gopath/bin/fabric-ca-client enroll -d -u https://admin-org1:org1AdminPW@rca-org1.inuit.local:7054
+   sudo -E $GOPATH/bin/fabric-ca-client enroll -d -u https://admin-org1:org1AdminPW@rca-org1.inuit.local:7054
    sudo chown -R $(whoami) ~/hyperledger
    mkdir -p ~/hyperledger/org1/peer1/msp/admincerts
    cp ~/hyperledger/org1/admin/msp/signcerts/cert.pem ~/hyperledger/org1/peer1/msp/admincerts/org1-admin-cert.pem
@@ -66,12 +69,12 @@ enrollOrd() {
    export FABRIC_CA_CLIENT_HOME=~/hyperledger/org1/ord1
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/ca/org1-ca-cert.pem
 
-   sudo -E /home/user1/gopath/bin/fabric-ca-client enroll -d -u https://ord1-org1:ord1o1pw@rca-org1.inuit.local:7054
+   sudo -E $GOPATH/bin/fabric-ca-client enroll -d -u https://ord1-org1:ord1o1pw@rca-org1.inuit.local:7054
 
    export FABRIC_CA_CLIENT_MSPDIR=tls-msp
    export FABRIC_CA_CLIENT_TLS_CERTFILES=~/hyperledger/org1/peer1/assets/tls-ca/tls-ca-cert.pem
 
-   sudo -E /home/user1/gopath/bin/fabric-ca-client enroll -d -u https://ord1-org1:ord1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org1.inuit.local
+   sudo -E $GOPATH/bin/fabric-ca-client enroll -d -u https://ord1-org1:ord1o1PW@ca-tls.inuit.local:7052 --enrollment.profile tls --csr.hosts ord1-org1.inuit.local
    for key in ~/hyperledger/org1/ord1/tls-msp/keystore/*
    do 
       mv "$key" key.pem
@@ -92,13 +95,13 @@ createGenesis() {
 
 }
 
-LaunchOrd() {
-   # Docker-compose file , docker-compose up
-}
-
-createCLI() {
-
-}
+# LaunchOrd() {
+#    # Docker-compose file , docker-compose up
+# }
+# 
+# createCLI() {
+# 
+# }
 
 createJoinChannel() {
    export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/org1/admin/msp
@@ -124,11 +127,13 @@ installInstanChaincode() {
 }
 
 
-if [ $1 = peer ]; then
-do
+if [[ $1 == peer ]]; then
    getFabCA
    enrollPeer
    getTLScert
-   enrollo1admin
-   launcho1p1 ../peer1-o1-docker-compose.yaml
-done
+   # enrollo1admin
+   # launcho1p1 ../peer1-o1-docker-compose.yaml
+else 
+   echo "Please enter 'ca' to setup TLS CA and org1 CA"
+   exit 1
+fi

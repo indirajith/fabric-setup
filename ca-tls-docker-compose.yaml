@@ -6,7 +6,7 @@ networks:
 services:
    ca-tls:
       container_name: ca-tls.inuit.local
-      image: hyperledger/fabric-ca:1.4.0
+      image: hyperledger/fabric-ca
       command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
       environment:
          - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-tlsca/crypto
